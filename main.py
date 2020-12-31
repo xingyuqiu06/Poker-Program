@@ -1,6 +1,24 @@
+import random
 def poker(hands):
-    "Return the best hand: poker([hand,hand,hand]) => hand"
-    return max(hands, key=hand_rank)
+    "Return a list of the best hand: poker([hand,hand,hand]) => hand"
+    return allmax(hands, key=hand_rank)
+
+def allmax(iter, key=None):
+    "return a list of all items equal to the max of the iterable"
+    result, maxval = [], None
+    key = key or (lambda x: x)
+    for x in iter:
+        xval = key(x)
+        if not result or xval > maxval:
+            maxval = xval
+            result = [x]
+        elif xval == maxval:
+            result.append(x)
+    return result
+
+def deal(num_player, n=5, deck = [r+s for r in '23456789TJQKA' for s in 'SHDC']):
+    random.shuffle(deck)
+    return [deck[n*i:n*(i+1)] for i in range(num_player)]
 
 def card_ranks(hand):
     "Return a list of the ranks, sorted with higher first"
@@ -62,6 +80,7 @@ def hand_rank(hand):
     else:  # high card
         return (0, ranks)
 
+hand_names = ['sf', 'fk', 'fh', 'fl','straight', 'tk', 'tp', 'kd', 'hc']
 def test():
     "Test cases for the function in poker program"
     sf = "6C 7C 8C 9C TC".split()
@@ -76,14 +95,24 @@ def test():
     assert kind(2, fkranks) == None
     assert kind(1, fkranks) == 7
     assert straight([9,8,7,6,5]) == True
-    assert poker([sf, fk,fh]) == sf
-    assert poker([fk, fh]) == fk
-    assert poker([fh, fh]) == fh
-    assert poker([sf]) == sf
-    assert poker([sf] + 99*[fh]) == sf
+    assert poker([sf, fk, fh]) == [sf]
+    assert poker([fk, fh]) == [fk]
+    assert poker([fh, fh]) == [fh,fh]
+    assert poker([sf]) == [sf]
+    assert poker([sf] + 99*[fh]) == [sf]
     assert hand_rank(sf) == (8, 10)
     assert hand_rank(fk) == (7, 9, 7)
     assert hand_rank(fh) == (6, 10, 7)
     return print("tests pass")
 
+def hand_percentages(n=700*1000):
+    counts = [0]*9
+    for i in range(int(n/10)):
+        for hand in deal(num_player=10):
+            rankings = hand_rank(hand)[0]
+            counts[rankings] += 1
+    for i in reversed(range(9)):
+        print("%14s: %6.3f %%" % (hand_names[i], 100.*counts[i]/n))
+
+hand_percentages()
 test()
